@@ -1,3 +1,4 @@
 steps:
-  - label: "Example Test"
+  - label: "Publish sources.json"
+    branches: "master testing"
     command: "scripts/publish.sh"
