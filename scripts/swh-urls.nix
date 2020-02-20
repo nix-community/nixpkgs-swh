@@ -2,7 +2,7 @@ with builtins;
 let
   pkgs = import <nixpkgs> {};
   mirrors = import <nixpkgs/pkgs/build-support/fetchurl/mirrors.nix>;
-  urls = import <nixpkgs/maintainers/scripts/find-tarballs.nix> {expr = import <nixpkgs/maintainers/scripts/all-tarballs.nix>;};
+  urls = import <nixpkgs/maintainers/scripts/find-tarballs.nix> {expr = (import <nixpkgs/maintainers/scripts/all-tarballs.nix>).hello;};
   
   # If the url scheme is `mirror`, this translates this mirror to a real URL by looking in nixpkgs mirrors
   resolveMirrorUrl = url: with pkgs.lib; let
