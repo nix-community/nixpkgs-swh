@@ -28,7 +28,7 @@ COMMIT_ID=$(git -C $dir rev-parse HEAD)
 
 echo "#################################################"
 echo "Generating sources.json for commit $COMMIT_ID ..."
-NIX_PATH=nixpkgs=$dir GC_INITIAL_HEAP_SIZE=4g nix-instantiate --strict --eval --json ./scripts/swh-urls.nix > ${COMMIT_ID}-sources.json
+NIX_PATH=nixpkgs=$dir GC_INITIAL_HEAP_SIZE=4g nix-instantiate --strict --eval --json ./scripts/swh-urls.nix --argstr revision $COMMIT_ID > ${COMMIT_ID}-sources.json
 
 
 echo "#################################################"

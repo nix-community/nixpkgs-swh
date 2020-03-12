@@ -1,3 +1,5 @@
+{ revision ? null }:
+
 with builtins;
 let
   pkgs = import <nixpkgs> {};
@@ -22,6 +24,7 @@ let
   };
 in
 {
+  inherit revision;
   version = 1;
   sources = map toSwh urls;
 }
