@@ -1,7 +1,7 @@
 #!/usr/bin/env nix-shell
 #!nix-shell -i bash
 #!nix-shell -I nixpkgs=./nix
-#!nix-shell -p nix git openssh
+#!nix-shell -p nix git openssh python3
 #!nix-shell --pure
 #!nix-shell --keep GITHUB_LEWO_CI_TOKEN
 set -euo pipefail
@@ -28,7 +28,11 @@ COMMIT_ID=$(git -C $dir rev-parse HEAD)
 
 echo "#################################################"
 echo "Generating sources.json for commit $COMMIT_ID ..."
-NIX_PATH=nixpkgs=$dir GC_INITIAL_HEAP_SIZE=4g nix-instantiate --strict --eval --json ./scripts/swh-urls.nix --argstr revision $COMMIT_ID > ${COMMIT_ID}-sources.json
+NIX_PATH=nixpkgs=$dir GC_INITIAL_HEAP_SIZE=4g nix-instantiate --strict --eval --json ./scripts/swh-urls.nix --argstr revision $COMMIT_ID > sources.json
+
+echo "#################################################"
+echo "Analyzing sources.json file and generating the README ..."
+python ./scripts/analyze.py sources.json > README.md
 
 
 echo "#################################################"
@@ -41,12 +45,12 @@ cd nixpkgs-swh-gh-pages
 
 export REMOTE_REPO="git@github.com:nix-community/nixpkgs-swh.git"
 
-cp ../${COMMIT_ID}-sources.json sources.json
+mv ../sources.json ../README.md .
 
 git init
 git config user.name "buildkite"
 git config user.email "buildkite@none"
-git add sources.json
+git add sources.json README.md
 git commit -m 'Deploy to GitHub Pages'
 # FIXME: the key location has to be updated
 GIT_SSH_COMMAND='ssh -i /tmp/github-nixpkgs-swh-key' git push --force $REMOTE_REPO master:gh-pages
