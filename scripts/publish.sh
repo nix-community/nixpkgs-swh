@@ -53,4 +53,4 @@ git config user.email "buildkite@none"
 git add sources.json README.md
 git commit -m 'Deploy to GitHub Pages'
 # FIXME: the key location has to be updated
-GIT_SSH_COMMAND='ssh -i /tmp/github-nixpkgs-swh-key' git push --force $REMOTE_REPO master:gh-pages
+GIT_SSH_COMMAND='ssh -i /run/keys/github-nixpkgs-swh-key' git push --force $REMOTE_REPO master:gh-pages
