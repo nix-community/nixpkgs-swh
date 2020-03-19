@@ -3,7 +3,6 @@
 #!nix-shell -I nixpkgs=./nix
 #!nix-shell -p nix git openssh python3
 #!nix-shell --pure
-#!nix-shell --keep GITHUB_LEWO_CI_TOKEN
 set -euo pipefail
 
 # TODO: get certs from nixpkgs.cacert instead or propagate some
