@@ -1,4 +1,4 @@
-{ revision ? null }:
+{ revision ? null, release ? null }:
 
 with builtins;
 let
@@ -27,7 +27,7 @@ let
   };
 in
 {
-  inherit revision;
+  inherit revision release;
   version = 1;
   sources = map toSwh urls;
 }

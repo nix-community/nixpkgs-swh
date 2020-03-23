@@ -65,11 +65,8 @@ for e in sources:
 
 readme = """
 
-Fill the [Software Heritage](https://www.softwareheritage.org) archive
-with all sources used to build [nixpkgs](https://github.com/NixOS/nixpkgs)!
-
 The [current
-`sources.json`](https://nix-community.github.io/nixpkgs-swh/sources.json)
+`sources.json`](https://nix-community.github.io/nixpkgs-swh/sources-{release}.json)
 has been built from the [nixpkgs revision
 `{revision}`](https://github.com/NixOS/nixpkgs/tree/{revision}).
 This file contains `{sourceNumber}` sources, coming from
@@ -81,6 +78,7 @@ sortedHosts = sorted(hosts.items(), key=lambda h: h[1], reverse=True)
 
 print(readme.format(
     revision=j['revision'],
+    release=j['release'],
     sourceNumber=len(sources),
     hostNumber=len(sortedHosts)))
 
