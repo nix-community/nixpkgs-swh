@@ -32,6 +32,7 @@ generate-release() {
         exit 1
     fi
 
+    export SOURCES_FILE=${DEST_DIR}/sources-${RELEASE}.json
 
     echo "*** Generate sources-${RELEASE}.json for commit $COMMIT_ID ..."
     # This is to make nix-instantiate failing if the commit id can not be downloader
@@ -43,10 +44,13 @@ generate-release() {
         ./scripts/swh-urls.nix \
         --argstr revision $COMMIT_ID \
         --argstr release ${RELEASE} \
-        > ${DEST_DIR}/sources-${RELEASE}.json
+        > ${SOURCES_FILE}
+
+    echo "*** Add integrity attribute"
+    python ./scripts/add-sri.py ${SOURCES_FILE}
 
     echo "*** Analyze the sources.json file and generating the README in sources-${RELEASE}.md ..."
-    python ./scripts/analyze.py ${DEST_DIR}/sources-${RELEASE}.json > ${DEST_DIR}/readme-${RELEASE}.md
+    python ./scripts/analyze.py ${SOURCES_FILE} > ${DEST_DIR}/readme-${RELEASE}.md
 }
 
 

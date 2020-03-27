@@ -24,6 +24,8 @@ let
   toSwh = s: {
     type="url";
     url = resolveMirrorUrl s.url;
+    hashAlgo = s.type;
+    hash = s.hash;
   };
 in
 {
