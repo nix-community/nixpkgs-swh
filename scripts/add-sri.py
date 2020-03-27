@@ -9,8 +9,16 @@ with open(sys.argv[1], 'r') as f:
     new = []
     for s in sources['sources']:
         try:
+            ash = s['hash'].split(":")
+            if len(ash) == 2:
+                hashAlgo = ash[0]
+                hashStr = ash[1]
+            else:
+                hashAlgo = s['hashAlgo']
+                hashStr = s['hash']
+
             result = subprocess.run(
-                ['nix', 'to-sri', '--type', s['hashAlgo'], s['hash']],
+                ['nix', 'to-sri', '--type', hashAlgo, hashStr],
                 stdout=subprocess.PIPE)
             s['integrity'] = str(result.stdout.rstrip(), 'utf8')
         except TypeError as e:
