@@ -38,12 +38,17 @@ generate-release() {
     # This is to make nix-instantiate failing if the commit id can not be downloader
     unset NIX_PATH
     export GC_INITIAL_HEAP_SIZE=4g
+    # TODO: get the timestamp of the evaluation with the Hydra API. I
+    # don't think it is currently possible so I would have to extend
+    # its API first.
     nix-instantiate \
         -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/${COMMIT_ID}.tar.gz \
         --strict --eval --json \
         ./scripts/swh-urls.nix \
         --argstr revision $COMMIT_ID \
         --argstr release ${RELEASE} \
+        --argstr evaluation ${EVAL_ID} \
+        --argstr timestamp $(date +%s)\
         > ${SOURCES_FILE}
 
     echo "*** Add integrity attribute"

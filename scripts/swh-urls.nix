@@ -1,4 +1,4 @@
-{ revision ? null, release ? null }:
+{ revision ? null, release ? null, evaluation ? null, timestamp ? null }:
 
 with builtins;
 let
@@ -29,7 +29,7 @@ let
   };
 in
 {
-  inherit revision release;
+  inherit revision release evaluation timestamp;
   version = 1;
   sources = map toSwh urls;
 }
