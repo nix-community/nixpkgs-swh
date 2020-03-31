@@ -4,7 +4,7 @@ with builtins;
 let
   pkgs = import <nixpkgs> {};
   mirrors = import <nixpkgs/pkgs/build-support/fetchurl/mirrors.nix>;
-  urls = import <nixpkgs/maintainers/scripts/find-tarballs.nix> {expr = import <nixpkgs/maintainers/scripts/all-tarballs.nix>;};
+  urls = import ./find-tarballs.nix {expr = (import <nixpkgs/maintainers/scripts/all-tarballs.nix>).skopeo;};
   
   # This is avoid double slashes in urls that make url non valid
   concatUrls = a: b: (pkgs.lib.removeSuffix "/" a) + "/" + (pkgs.lib.removePrefix "/" b);
@@ -22,10 +22,9 @@ let
   
   # Transform the url list to swh format
   toSwh = s: {
+    inherit (s) postFetch outputHashMode outputHashAlgo outputHash;
     type="url";
     url = resolveMirrorUrl s.url;
-    hashAlgo = s.type;
-    hash = s.hash;
   };
 in
 {
