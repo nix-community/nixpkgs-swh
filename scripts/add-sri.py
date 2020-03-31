@@ -31,13 +31,12 @@ with open(sys.argv[1], 'r') as f:
             traceback.print_exc(file=sys.stdout)
             print('-'*60)
 
+        # We try to infer the fetcher
         if fetchZipPattern in s['postFetch']:
             s['inferredFetcher'] = 'fetchzip'
-            s['postFetch'] = ""
         elif fetchpatchPattern in s['postFetch']:
             s['inferredFetcher'] = 'fetchpatch'
-            s['postFetch'] = ""
-            
+        del s['postFetch']
             
 if sources is not None:
     with open(sys.argv[1], 'w') as f:

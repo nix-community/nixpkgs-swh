@@ -93,15 +93,23 @@ for k, v in schemes.items():
     print("     %6s %s" % (k, v))
 
 types = {}
+file_types = {}
+fetchers = {}
 for s in sources:
     types[s['type']] = types.get(s['type'], 0) + 1
+    file_types[s['file-type']] = file_types.get(s['file-type'], 0) + 1
+    if 'inferredFetcher' in s:
+        fetchers[s['inferredFetcher']] = fetchers.get(s['inferredFetcher'], 0) + 1
+
 print("\n#### By types\n")
 for k, v in types.items():
     print("     %16s %s" % (k, v))
 
-file_types = {}
-for s in sources:
-    file_types[s['file-type']] = file_types.get(s['file-type'], 0) + 1
 print("\n#### By file types\n")
 for k, v in file_types.items():
+    print("     %16s %s" % (k, v))
+
+print("\n#### By fetchers\n")
+print("Be careful, fetchers are inferred and could be wrong\n")
+for k, v in fetchers.items():
     print("     %16s %s" % (k, v))
