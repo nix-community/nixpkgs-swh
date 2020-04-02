@@ -48,17 +48,17 @@ extension_patterns = {
 sources = j['sources']
 for e in sources:
 
-    u = urlparse(e['url'][0])
+    u = urlparse(e['urls'][0])
     schemes[u.scheme] = schemes.get(u.scheme, 0) + 1
     hosts[u.netloc] = hosts.get(u.netloc, 0) + 1
 
     for k, v in origin_patterns.items():
-        if re.search(k, e['url'][0]) is not None:
+        if re.search(k, e['urls'][0]) is not None:
             e['type'] = v
             break
 
     for k, v in extension_patterns.items():
-        if re.search(k, e['url'][0]) is not None:
+        if re.search(k, e['urls'][0]) is not None:
             e['file-type'] = v
             break
 

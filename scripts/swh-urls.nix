@@ -27,7 +27,7 @@ let
     type="url";
     # There are expressions where the url is a list. See paratype-pt-mono
     # derivation: the url attribute is a list :/
-    url = if isList s.url then s.url else resolveMirrorUrl s.url;
+    urls = if isList s.url then s.url else resolveMirrorUrl s.url;
   };
 in
 {
