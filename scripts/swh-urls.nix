@@ -4,7 +4,8 @@ with builtins;
 let
   pkgs = import <nixpkgs> {};
   mirrors = import <nixpkgs/pkgs/build-support/fetchurl/mirrors.nix>;
-  urls = import ./find-tarballs.nix {expr = import <nixpkgs/maintainers/scripts/all-tarballs.nix>;};
+  expr =  import <nixpkgs/maintainers/scripts/all-tarballs.nix>;
+  urls = import ./find-tarballs.nix {expr = expr;};
   
   # This is avoid double slashes in urls that make url non valid
   concatUrls = a: b: (pkgs.lib.removeSuffix "/" a) + "/" + (pkgs.lib.removePrefix "/" b);
@@ -24,7 +25,9 @@ let
   toSwh = s: {
     inherit (s) postFetch outputHashMode outputHashAlgo outputHash;
     type="url";
-    url = resolveMirrorUrl s.url;
+    # There are expressions where the url is a list. See paratype-pt-mono
+    # derivation: the url attribute is a list :/
+    url = if isList s.url then s.url else resolveMirrorUrl s.url;
   };
 in
 {

@@ -32,6 +32,7 @@ with open(sys.argv[1], 'r') as f:
             print('-'*60)
 
         # We try to infer the fetcher
+        s['inferredFetcher'] = 'unclassified'
         if fetchZipPattern in s['postFetch']:
             s['inferredFetcher'] = 'fetchzip'
         elif fetchpatchPattern in s['postFetch']:

@@ -10,9 +10,9 @@ let
   root = expr;
 
   uniqueUrls = map (x: x.file) (genericClosure {
-    startSet = map (file: { key = file.url; inherit file; }) urls;
-    operator = const [ ];
-  });
+     startSet = map (file: { key = file.outputHash; inherit file; }) urls;
+     operator = const [ ];
+   });
 
   urls = map (drv: {
     url = head (drv.urls or [ drv.url ]);
@@ -25,8 +25,17 @@ let
 
   fetchurlDependencies =
     filter
-      (drv: drv.outputHash or "" != "" && (drv ? url || drv ? urls))
-      dependencies;
+    (drv: drv.outputHash or "" != ""
+          && (drv ? url || drv ? urls))
+          dependencies;
+
+   # If a dichotomy is needed on nixpkgs:/
+   # subset = let
+   #   start = 14379;
+   #   len = 2;
+   #   sub = (pkgs.lib.sublist start len dependencies);
+   # in
+   # builtins.trace [ start len] sub;
 
   dependencies = map (x: x.value) (genericClosure {
     startSet = map keyDrv (derivationsIn' root);

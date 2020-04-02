@@ -48,7 +48,7 @@ generate-release() {
         --argstr revision $COMMIT_ID \
         --argstr release ${RELEASE} \
         --argstr evaluation ${EVAL_ID} \
-        --argstr timestamp $(date +%s)\
+        --argstr timestamp $(date +%s) \
         > ${SOURCES_FILE}
 
     echo "*** Add integrity attribute"
