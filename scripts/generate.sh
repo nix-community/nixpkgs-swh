@@ -41,7 +41,7 @@ generate-release() {
     # TODO: get the timestamp of the evaluation with the Hydra API. I
     # don't think it is currently possible so I would have to extend
     # its API first.
-    nix-instantiate \
+    time nix-instantiate \
         -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/${COMMIT_ID}.tar.gz \
         --strict --eval --json \
         ./scripts/swh-urls.nix \
@@ -52,10 +52,10 @@ generate-release() {
         > ${SOURCES_FILE}
 
     echo "*** Add integrity attribute"
-    python ./scripts/add-sri.py ${SOURCES_FILE}
+    time python ./scripts/add-sri.py ${SOURCES_FILE}
 
     echo "*** Analyze the sources.json file and generating the README in sources-${RELEASE}.md ..."
-    python ./scripts/analyze.py ${SOURCES_FILE} > ${DEST_DIR}/readme-${RELEASE}.md
+    time python ./scripts/analyze.py ${SOURCES_FILE} > ${DEST_DIR}/readme-${RELEASE}.md
 }
 
 
