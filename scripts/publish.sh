@@ -16,7 +16,7 @@ export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 rm -rf nixpkgs-swh-gh-pages
 rm -rf build
 
-./scripts/generate.sh build/ unstable 19.09 20.03
+./scripts/generate.sh build/ unstable # 19.09 20.03
 
 
 mkdir nixpkgs-swh-gh-pages
