@@ -65,12 +65,13 @@ for e in sources:
 
 readme = """
 
-The [current
-`sources.json`](https://nix-community.github.io/nixpkgs-swh/sources-{release}.json)
+The file [`sources-{release}-full.json`](https://nix-community.github.io/nixpkgs-swh/sources-{release}-full.json)
 has been built from the [nixpkgs revision
 `{revision}`](https://github.com/NixOS/nixpkgs/tree/{revision}).
 This file contains `{sourceNumber}` sources, coming from
 `{hostNumber}` different hosts.
+
+The file [`sources-{release}.json`](https://nix-community.github.io/nixpkgs-swh/sources-{release}.json) is a filtered version which only contains archives. This file is consumed by SWH.
 
 """
 

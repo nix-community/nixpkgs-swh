@@ -67,8 +67,7 @@ generate-release() {
 
 generate-readme() {
     cat <<EOF > ${DEST_DIR}/README.md
-Fill the Software Heritage archive with all sources used to build
-[nixpkgs revision iop](https://github.com/NixOS/nixpkgs)!
+Fill the Software Heritage archive
 
 EOF
 
