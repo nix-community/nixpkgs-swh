@@ -52,13 +52,13 @@ generate-release() {
         --argstr timestamp $(date +%s) \
         > ${SOURCES_FILE_FULL}
 
+    echo "*** Add integrity attribute"
+    time python ./scripts/add-sri.py ${SOURCES_FILE_FULL}
+
     # This is to reduce the SWH loader load time since it currently
     # only support archives.
     echo "*** Generate a filtered source file"
     cat ${SOURCES_FILE_FULL} | jq '.sources = (.sources | map(select(.urls[0] | test(".tar.gz$|.zip$|tar.bz2$|.tbz$|.tar.xz$|.tgz$|.tar$"))))' > ${SOURCES_FILE}
-
-    echo "*** Add integrity attribute"
-    time python ./scripts/add-sri.py ${SOURCES_FILE}
 
     echo "*** Analyze the sources.json file and generating the README in sources-${RELEASE}.md ..."
     time python ./scripts/analyze.py ${SOURCES_FILE_FULL} > ${DEST_DIR}/readme-${RELEASE}.md
