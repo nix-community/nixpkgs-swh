@@ -2,7 +2,6 @@
 #!nix-shell -i bash
 #!nix-shell -I nixpkgs=./nix
 #!nix-shell -p nix git openssh python3 curl jq
-
 set -euo pipefail
 
 

@@ -3,7 +3,7 @@ import sys
 import subprocess
 import traceback
 
-
+# These are heuristics to detect the fetcher, based on the postFetch value!
 fetchZipPattern = "Pass stripRoot=false; to fetchzip to assume flat list of files"
 fetchpatchPattern = "Did you maybe fetch a HTML representation of a patch instead of a raw patch"
 
