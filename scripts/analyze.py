@@ -23,7 +23,7 @@ origin_patterns = {
     'https://rubygems.org/(.*)': 'rubygems',
     'svn://(.*)': 'svn',
     'https://(.*)/api/v4/projects/(.*)/repository/archive.tar.gz\?sha=(.*)': 'gitlab', # noqa
-    '.*': 'unknonw',
+    '.*': 'unknown',
 }
 
 extension_patterns = {
