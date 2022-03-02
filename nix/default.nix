@@ -1,3 +1,3 @@
-{ sources ? import ./sources.nix }:
+{ sources ? import ./sources.nix, inNixShell ? false }:
 
-import sources.nixpkgs {}
+import sources.nixpkgs { inherit inNixShell; }
