@@ -21,8 +21,12 @@ with open(sys.argv[1], 'r') as f:
                 hashAlgo = s['outputHashAlgo']
                 hashStr = s['outputHash']
 
+            if (hashAlgo is None or hashAlgo == "") and hashStr != "":
+                s['integrity'] = hashStr
+                continue
+
             result = subprocess.run(
-                ['nix', 'to-sri', '--type', hashAlgo, hashStr],
+                ['nix', 'hash', 'to-sri', '--type', hashAlgo, hashStr],
                 stdout=subprocess.PIPE)
             s['integrity'] = str(result.stdout.rstrip(), 'utf8')
         except TypeError as e:
