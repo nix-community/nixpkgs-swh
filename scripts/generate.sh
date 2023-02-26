@@ -1,7 +1,4 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i bash
-#!nix-shell -I nixpkgs=./nix
-#!nix-shell -p nix git openssh python3 curl jq
+#!/usr/bin/env bash
 set -euo pipefail
 
 
@@ -49,6 +46,8 @@ generate-release() {
         --argstr release ${RELEASE} \
         --argstr evaluation ${EVAL_ID} \
         --argstr timestamp $(date +%s) \
+        --argstr find-tarballs $PWD/scripts/find-tarballs.nix \
+        --arg testing $TESTING \
         > ${SOURCES_FILE_FULL}
 
     echo "*** Add integrity attribute"
@@ -66,23 +65,28 @@ generate-release() {
 
 generate-readme() {
     cat <<EOF > ${DEST_DIR}/README.md
-Fill the Software Heritage archive
+# Fill the Software Heritage archive
 
 EOF
 
-for i in $@; do
-    generate-release ${i}
-    echo "### NixOS \`${i}\`" >> ${DEST_DIR}/README.md
-    cat ${DEST_DIR}/readme-${i}.md >> ${DEST_DIR}/README.md
-    echo >> ${DEST_DIR}/README.md
-    echo >> ${DEST_DIR}/README.md
-    shift
-done
+    for i in $@; do
+        generate-release ${i}
+        echo "### NixOS \`${i}\` release" >> ${DEST_DIR}/README.md
+        cat ${DEST_DIR}/readme-${i}.md >> ${DEST_DIR}/README.md
+        echo >> ${DEST_DIR}/README.md
+        echo >> ${DEST_DIR}/README.md
+        shift
+    done
 }
-
 
 DEST_DIR=$1
 mkdir -p ${DEST_DIR}
 shift
 
+TESTING=$1
+shift
+
 generate-readme $@
+
+echo "** Converting README.md to index.html"
+pandoc ${DEST_DIR}/README.md > ${DEST_DIR}/index.html
