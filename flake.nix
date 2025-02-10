@@ -20,10 +20,10 @@
           mkdir -p $out/bin
           cp ${./scripts/generate.sh} $out/bin/nixpkgs-swh-generate
           substituteInPlace $out/bin/nixpkgs-swh-generate \
-            --replace './scripts/swh-urls.nix' '${./scripts/swh-urls.nix}' \
-            --replace './scripts/add-sri.py' '${./scripts/add-sri.py}' \
-            --replace './scripts/analyze.py' '${./scripts/analyze.py}' \
-            --replace '$PWD/scripts/find-tarballs.nix' '${./scripts/find-tarballs.nix}'
+            --replace-fail './scripts/swh-urls.nix' '${./scripts/swh-urls.nix}' \
+            --replace-fail './scripts/add-sri.py' '${./scripts/add-sri.py}' \
+            --replace-fail './scripts/analyze.py' '${./scripts/analyze.py}' \
+            --replace-fail '$PWD/scripts/find-tarballs.nix' '${./scripts/find-tarballs.nix}'
           wrapProgram $out/bin/nixpkgs-swh-generate \
             --prefix PATH : ${binPath}
         '';
@@ -61,18 +61,19 @@
           };
         };
       };
-      config = {
+      config = lib.mkIf cfg.enable {
         nixpkgs.overlays = [ self.overlay ];
-        systemd.services.nixpkgs-swh = pkgs.lib.mkIf cfg.enable {
+        systemd.services.nixpkgs-swh = {
           description = "nixpkgs-swh";
           wantedBy = [ "multi-user.target" ];
-          restartIfChanged = false;
-          unitConfig.X-StopOnRemoval = false;
           # Do it every day
-          startAt = "*-*-* 00:00:00";
+          startAt = "daily";
           script = ''
             ${pkgs.nixpkgs-swh-generate}/bin/nixpkgs-swh-generate ${dir} ${if cfg.testing then "true" else "false"} unstable
           '';
+        };
+        systemd.timers.nixpkgs-swh.timerConfig = {
+          Persistent = true;
         };
         services.nginx.virtualHosts = {
           "${cfg.fqdn}" = {
