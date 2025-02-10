@@ -5,6 +5,7 @@
 import json
 import sys
 import re
+import datetime
 from urllib.parse import urlparse
 
 with open(sys.argv[1], "r") as read_file:
@@ -62,17 +63,19 @@ for e in sources:
             e['file-type'] = v
             break
 
+today = datetime.date.today()
 
 readme = """
 
-The file [`sources-{release}-full.json`](https://nix-community.github.io/nixpkgs-swh/sources-{release}-full.json)
+The file [`sources-{release}-full.json`](./sources-{release}-full.json)
 has been built from the [nixpkgs revision
 `{revision}`](https://github.com/NixOS/nixpkgs/tree/{revision}).
 This file contains `{sourceNumber}` sources, coming from
 `{hostNumber}` different hosts.
 
-The file [`sources-{release}.json`](https://nix-community.github.io/nixpkgs-swh/sources-{release}.json) is a filtered version which only contains archives. This file is consumed by SWH.
+The file [`sources-{release}.json`](./sources-{release}.json) is a filtered version which only contains archives. This file is consumed by Software Heritage to fill its archive.
 
+Generated the {today}.
 """
 
 sortedHosts = sorted(hosts.items(), key=lambda h: h[1], reverse=True)
@@ -81,7 +84,8 @@ print(readme.format(
     revision=j['revision'],
     release=j['release'],
     sourceNumber=len(sources),
-    hostNumber=len(sortedHosts)))
+    hostNumber=len(sortedHosts),
+    today=today))
 
 
 print("\n#### By host\n")
