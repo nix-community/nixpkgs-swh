@@ -24,6 +24,19 @@ let
     name = drv.name;
     outputHashMode = drv.outputHashMode or "";
     postFetch = drv.postFetch or "";
+    rev = drv.rev or "";
+    submodule = builtins.hasAttr "fetchSubmodules" drv && drv.fetchSubmodules;
+    sparseCheckout =
+      if builtins.hasAttr "sparseCheckout" drv then drv.sparseCheckout else [ ];
+    type = if builtins.hasAttr "SVN_SSH" drv then
+      "svn"
+    else if builtins.hasAttr "fetchSubmodules" drv then
+      "git"
+    else if builtins.hasAttr "subrepoClause" drv then
+      "hg"
+    else
+      "url";
+    nixStorePath = drv.out;
   }) fetchurlDependencies;
 
   fetchurlDependencies =

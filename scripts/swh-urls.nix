@@ -24,8 +24,9 @@ let
 
   # Transform the url list to swh format
   toSwh = s: {
-    inherit (s) postFetch outputHashMode outputHashAlgo outputHash;
-    type = "url";
+    inherit (s)
+      postFetch outputHashMode outputHashAlgo outputHash rev submodule type
+      sparseCheckout nixStorePath;
     # There are expressions where the url is a list. See paratype-pt-mono
     # derivation: the url attribute is a list :/
     urls = if isList s.url then s.url else resolveMirrorUrl s.url;
