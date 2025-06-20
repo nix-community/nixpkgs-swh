@@ -19,10 +19,10 @@ let
 
   urls = map (drv: {
     url = head (drv.urls or [ drv.url ]);
-    outputHash = drv.outputHash;
-    outputHashAlgo = drv.outputHashAlgo;
+    outputHash = drv.outputHash or "";
+    outputHashAlgo = drv.outputHashAlgo or "";
     name = drv.name;
-    outputHashMode = drv.outputHashMode;
+    outputHashMode = drv.outputHashMode or "";
     postFetch = drv.postFetch or "";
   }) fetchurlDependencies;
 
