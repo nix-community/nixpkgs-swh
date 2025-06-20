@@ -19,7 +19,10 @@ let
       isMirrorUrl = elemAt splited 0 != "mirror:";
       mirror = elemAt splited 2;
       path = concatStringsSep "/" (drop 3 splited);
-      resolvedUrls = getAttr mirror mirrors;
+      resolvedUrls = if builtins.hasAttr mirror mirrors then
+        getAttr mirror mirrors
+      else
+        [ url ];
     in if isMirrorUrl then [ url ] else map (r: concatUrls r path) resolvedUrls;
 
   # Transform the url list to swh format
