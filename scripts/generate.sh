@@ -1,6 +1,6 @@
 #!/usr/bin/env nix-shell
 #!nix-shell -i bash
-#!nix-shell -p nix git openssh python3 curl jq
+#!nix-shell -p nix git openssh python3 python3Packages.aiohttp python3Packages.uvloop curl jq
 set -euo pipefail
 
 

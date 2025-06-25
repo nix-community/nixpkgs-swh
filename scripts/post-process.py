@@ -4,9 +4,13 @@
 # nixguix lister. The nixguix lister source code can be browsed at this URL:
 # https://gitlab.softwareheritage.org/swh/devel/swh-lister/-/tree/master/swh/lister/nixguix
 
+import asyncio
 import json
 import subprocess
 import sys
+
+import aiohttp
+import uvloop
 
 # to remove duplicates
 seenStorePaths = set()
@@ -72,6 +76,29 @@ with open(sys.argv[1], "r") as f:
             if not source[attr]:
                 del source[attr]
         filteredSources.append(source)
+
+
+async def get(source, session):
+    try:
+        hash_store = source["nixStorePath"].split("/")[-1].split("-", 1)[0]
+        url = f"https://cache.nixos.org/{hash_store}.narinfo"
+        async with session.get(url) as response:
+            narinfo = await response.read()
+            print(f"Successfully got URL {url} with resp of length {len(narinfo)}.")
+            source["narinfo"] = narinfo.decode()
+            if source["narinfo"] != "404":
+                source["last_modified"] = response.headers["last-modified"]
+    except Exception as e:
+        print(f"Unable to get URL {url} due to {str(e)}.")
+
+
+async def main(filteredSources):
+    async with aiohttp.ClientSession() as session:
+        await asyncio.gather(*(get(source, session) for source in filteredSources))
+
+
+# fetch narinfo data from the nix remote cache
+uvloop.run(main(filteredSources))
 
 # dump post processed sources to file
 sources["sources"] = filteredSources
