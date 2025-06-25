@@ -6,7 +6,6 @@
 
 import asyncio
 import json
-import subprocess
 import sys
 
 import aiohttp
@@ -17,6 +16,8 @@ seenStorePaths = set()
 
 # to contain unique sources
 filteredSources = []
+# nix-hash commands to execute asynchronously
+hashesToNormalize = []
 
 with open(sys.argv[1], "r") as f:
     sources = json.load(f)
@@ -46,13 +47,9 @@ with open(sys.argv[1], "r") as f:
 
         # ensure integrity in nix sri format
         if not hashStr.endswith("=") or "-" not in hashStr:
-            result = subprocess.run(
-                ["nix-hash", "--to-sri", "--type", hashAlgo, hashStr],
-                text=True,
-                encoding="ascii",
-                stdout=subprocess.PIPE,
+            hashesToNormalize.append(
+                (f"nix-hash --to-sri --type {hashAlgo} {hashStr}", source)
             )
-            source["integrity"] = result.stdout.rstrip()
 
         # add fields related to VCS souuces
         if source["type"] == "hg":
@@ -78,7 +75,29 @@ with open(sys.argv[1], "r") as f:
         filteredSources.append(source)
 
 
-async def get(source, session):
+async def normalize_hash(nixhash_cmd, source, sem):
+    await sem.acquire()
+    try:
+        print(f"Executing '{nixhash_cmd}'")
+        proc = await asyncio.create_subprocess_shell(
+            nixhash_cmd,
+            stderr=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+        )
+        stdout, _ = await proc.communicate()
+        source["integrity"] = stdout.decode().strip()
+    finally:
+        sem.release()
+
+
+async def normalize_hashes(hashesToNormalize):
+    sem = asyncio.Semaphore(100)
+    await asyncio.gather(
+        *(normalize_hash(cmd, source, sem) for cmd, source in hashesToNormalize)
+    )
+
+
+async def narinfo_get(source, session):
     try:
         hash_store = source["nixStorePath"].split("/")[-1].split("-", 1)[0]
         url = f"https://cache.nixos.org/{hash_store}.narinfo"
@@ -92,13 +111,17 @@ async def get(source, session):
         print(f"Unable to get URL {url} due to {str(e)}.")
 
 
-async def main(filteredSources):
+async def fetch_narinfos(filteredSources):
     async with aiohttp.ClientSession() as session:
-        await asyncio.gather(*(get(source, session) for source in filteredSources))
+        await asyncio.gather(
+            *(narinfo_get(source, session) for source in filteredSources)
+        )
 
+# normalize hashes that need it using nix-hash tool
+uvloop.run(normalize_hashes(hashesToNormalize))
 
 # fetch narinfo data from the nix remote cache
-uvloop.run(main(filteredSources))
+uvloop.run(fetch_narinfos(filteredSources))
 
 # dump post processed sources to file
 sources["sources"] = filteredSources
