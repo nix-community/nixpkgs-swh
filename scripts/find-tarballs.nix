@@ -19,7 +19,20 @@ let
 
   urls = map (drv: {
     url = head (drv.urls or [ drv.url ]);
-    outputHash = drv.outputHash or "";
+    outputHash = if builtins.hasAttr "outputHash" drv
+    && (!lib.strings.hasSuffix "=" drv.outputHash
+      || !lib.strings.hasInfix "-" drv.outputHash) then
+      builtins.convertHash {
+        hash = drv.outputHash;
+        toHashFormat = "sri";
+        hashAlgo =
+          if drv.outputHashAlgo != null then
+            drv.outputHashAlgo
+          else
+            "sha256";
+      }
+    else
+      drv.outputHash or "";
     outputHashAlgo = drv.outputHashAlgo or "";
     name = drv.name;
     outputHashMode = drv.outputHashMode or "";

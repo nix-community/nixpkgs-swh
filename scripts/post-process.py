@@ -16,8 +16,6 @@ seenStorePaths = set()
 
 # to contain unique sources
 filteredSources = []
-# nix-hash commands to execute asynchronously
-hashesToNormalize = []
 
 with open(sys.argv[1], "r") as f:
     sources = json.load(f)
@@ -45,13 +43,7 @@ with open(sys.argv[1], "r") as f:
             # assume sha256
             hashAlgo = source["outputHashAlgo"] = "sha256"
 
-        # ensure integrity in nix sri format
-        if not hashStr.endswith("=") or "-" not in hashStr:
-            hashesToNormalize.append(
-                (f"nix-hash --to-sri --type {hashAlgo} {hashStr}", source)
-            )
-
-        # add fields related to VCS souuces
+        # add fields related to VCS sources
         if source["type"] == "hg":
             source["hg_url"] = source["urls"][0]
             source["hg_changeset"] = source["rev"]
@@ -75,28 +67,6 @@ with open(sys.argv[1], "r") as f:
         filteredSources.append(source)
 
 
-async def normalize_hash(nixhash_cmd, source, sem):
-    await sem.acquire()
-    try:
-        print(f"Executing '{nixhash_cmd}'")
-        proc = await asyncio.create_subprocess_shell(
-            nixhash_cmd,
-            stderr=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-        )
-        stdout, _ = await proc.communicate()
-        source["integrity"] = stdout.decode().strip()
-    finally:
-        sem.release()
-
-
-async def normalize_hashes(hashesToNormalize):
-    sem = asyncio.Semaphore(100)
-    await asyncio.gather(
-        *(normalize_hash(cmd, source, sem) for cmd, source in hashesToNormalize)
-    )
-
-
 async def narinfo_get(source, session):
     try:
         hash_store = source["nixStorePath"].split("/")[-1].split("-", 1)[0]
@@ -117,8 +87,6 @@ async def fetch_narinfos(filteredSources):
             *(narinfo_get(source, session) for source in filteredSources)
         )
 
-# normalize hashes that need it using nix-hash tool
-uvloop.run(normalize_hashes(hashesToNormalize))
 
 # fetch narinfo data from the nix remote cache
 uvloop.run(fetch_narinfos(filteredSources))
