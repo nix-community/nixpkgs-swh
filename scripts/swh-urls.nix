@@ -1,11 +1,11 @@
-{ revision ? null, release ? null, evaluation ? null, timestamp ? null }:
+{ revision ? null, release ? null, evaluation ? null, timestamp ? null, testing ? false, find-tarballs}:
 
 with builtins;
 let
   pkgs = import <nixpkgs> { };
   mirrors = import <nixpkgs/pkgs/build-support/fetchurl/mirrors.nix>;
   expr = import <nixpkgs/maintainers/scripts/all-tarballs.nix>;
-  urls = import ./find-tarballs.nix { expr = expr; };
+  urls = import find-tarballs {expr = if testing then expr.hello else expr;};
 
   # This is avoid double slashes in urls that make url non valid
   concatUrls = a: b:

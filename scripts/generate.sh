@@ -1,6 +1,4 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i bash
-#!nix-shell -p nix git openssh python3 python3Packages.aiohttp python3Packages.uvloop curl jq
+#!/usr/bin/env bash
 set -euo pipefail
 
 
@@ -47,6 +45,8 @@ generate-release() {
         --argstr release ${RELEASE} \
         --argstr evaluation ${EVAL_ID} \
         --argstr timestamp $(date +%s) \
+        --arg testing $TESTING \
+        --argstr find-tarballs $PWD/scripts/find-tarballs.nix \
         --show-trace \
         > ${SOURCES_FILE}
 
@@ -64,16 +64,33 @@ Fill the Software Heritage archive
 
 EOF
 
-for i in $@; do
-    generate-release ${i}
-    echo "### NixOS \`${i}\`" >> ${DEST_DIR}/README.md
-    cat ${DEST_DIR}/readme-${i}.md >> ${DEST_DIR}/README.md
-    echo >> ${DEST_DIR}/README.md
-    echo >> ${DEST_DIR}/README.md
-    shift
-done
+    for i in $@; do
+        generate-release ${i}
+        echo "### NixOS \`${i}\`" >> ${DEST_DIR}/README.md
+        cat ${DEST_DIR}/readme-${i}.md >> ${DEST_DIR}/README.md
+        echo >> ${DEST_DIR}/README.md
+        echo >> ${DEST_DIR}/README.md
+        shift
+    done
 }
 
+
+TESTING=false
+if [ $# -ge 1 ] && [ $1 = "--testing" ]
+then
+    TESTING=true
+    shift
+fi
+
+if [ $# -le 1 ]
+then
+    echo "Usage: nixpkgs-swh-generate [--testing] OUTPUT-DIR RELEASE [RELEASE] ..."
+    echo " --testing only evaluates nixpkgs.hello"
+    echo " OUTPUT-DIR is the diretory where generated files are outputed"
+    echo " RELEASE can be repeated multiple times. There are the release unstable, release-25.05, ..."
+    echo "   Release names correspond to the Hydra jobset names: https://hydra.nixos.org/project/nixos"
+    exit 1
+fi
 
 DEST_DIR=$1
 mkdir -p ${DEST_DIR}
