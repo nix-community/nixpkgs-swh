@@ -73,7 +73,7 @@ async def narinfo_get(source, session):
         url = f"https://cache.nixos.org/{hash_store}.narinfo"
         async with session.get(url) as response:
             narinfo = await response.read()
-            print(f"Successfully got URL {url} with resp of length {len(narinfo)}.")
+            # print(f"Successfully got URL {url} with resp of length {len(narinfo)}.")
             source["narinfo"] = narinfo.decode()
             if source["narinfo"] != "404":
                 source["last_modified"] = response.headers["last-modified"]
