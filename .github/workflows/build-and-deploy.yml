@@ -1,4 +1,4 @@
-name: Deploy sources-unstable.json to Pages
+name: Build sources-unstable.json for nixpkgs.hello
 
 on:
   push:
@@ -6,12 +6,6 @@ on:
   schedule:
     # execute workflow every day at midnight
     - cron: "0 0 * * *"
-
-# required for deploying to GH Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,32 +23,7 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           install_options: --no-daemon
-      # Call to nix-instantiate eats a LOT of RAM so we need to increase swap space size
-      # to avoid the generate.sh script execution to be killed in flight by the gha runner.
-      # This terribly slow downs the processing though but at least it terminates successfully.
-      - name: Set Swap Space
-        uses: pierotofy/set-swap-space@master
-        with:
-            swap-size-gb: 16
-      - name: Build sources-unstable.json
-        run: ./scripts/generate.sh build/ unstable
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: ./build
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
-    runs-on: ubuntu-latest
-    name: Deploy
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Build sources-unstable.json for nixpkgs.hello
+        run: nix run .#nixpkgs-swh-generate -- --testing build unstable
+      - name: Display sources-unstable.json for nixpkgs.hello
+        run: cat build/sources-unstable.json | jq
