@@ -1,7 +1,4 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i bash
-#!nix-shell -I nixpkgs=./nix
-#!nix-shell -p nix git openssh python3 curl jq
+#!/usr/bin/env bash
 set -euo pipefail
 
 
@@ -31,11 +28,10 @@ generate-release() {
         exit 1
     fi
 
-    export SOURCES_FILE_FULL=${DEST_DIR}/sources-${RELEASE}-full.json
     export SOURCES_FILE=${DEST_DIR}/sources-${RELEASE}.json
 
     echo "*** Generate sources-${RELEASE}.json for commit $COMMIT_ID ..."
-    # This is to make nix-instantiate failing if the commit id can not be downloader
+    # This is to make nix-instantiate failing if the commit id can not be downloaded
     unset NIX_PATH
     export GC_INITIAL_HEAP_SIZE=4g
     # TODO: get the timestamp of the evaluation with the Hydra API. I
@@ -49,18 +45,16 @@ generate-release() {
         --argstr release ${RELEASE} \
         --argstr evaluation ${EVAL_ID} \
         --argstr timestamp $(date +%s) \
-        > ${SOURCES_FILE_FULL}
+        --arg testing $TESTING \
+        --argstr find-tarballs $PWD/scripts/find-tarballs.nix \
+        --show-trace \
+        > ${SOURCES_FILE}
 
-    echo "*** Add integrity attribute"
-    time python ./scripts/add-sri.py ${SOURCES_FILE_FULL}
-
-    # This is to reduce the SWH loader load time since it currently
-    # only support archives.
-    echo "*** Generate a filtered source file"
-    cat ${SOURCES_FILE_FULL} | jq '.sources = (.sources | map(select(.urls[0] | test(".tar.gz$|.zip$|tar.bz2$|.tbz$|.tar.xz$|.tgz$|.tar$"))))' > ${SOURCES_FILE}
+    echo "*** Post process extracted sources data"
+    time python ./scripts/post-process.py ${SOURCES_FILE}
 
     echo "*** Analyze the sources.json file and generating the README in sources-${RELEASE}.md ..."
-    time python ./scripts/analyze.py ${SOURCES_FILE_FULL} > ${DEST_DIR}/readme-${RELEASE}.md
+    time python ./scripts/analyze.py ${SOURCES_FILE} > ${DEST_DIR}/readme-${RELEASE}.md
 }
 
 
@@ -70,16 +64,33 @@ Fill the Software Heritage archive
 
 EOF
 
-for i in $@; do
-    generate-release ${i}
-    echo "### NixOS \`${i}\`" >> ${DEST_DIR}/README.md
-    cat ${DEST_DIR}/readme-${i}.md >> ${DEST_DIR}/README.md
-    echo >> ${DEST_DIR}/README.md
-    echo >> ${DEST_DIR}/README.md
-    shift
-done
+    for i in $@; do
+        generate-release ${i}
+        echo "### NixOS \`${i}\`" >> ${DEST_DIR}/README.md
+        cat ${DEST_DIR}/readme-${i}.md >> ${DEST_DIR}/README.md
+        echo >> ${DEST_DIR}/README.md
+        echo >> ${DEST_DIR}/README.md
+        shift
+    done
 }
 
+
+TESTING=false
+if [ $# -ge 1 ] && [ $1 = "--testing" ]
+then
+    TESTING=true
+    shift
+fi
+
+if [ $# -le 1 ]
+then
+    echo "Usage: nixpkgs-swh-generate [--testing] OUTPUT-DIR RELEASE [RELEASE] ..."
+    echo " --testing only evaluates nixpkgs.hello"
+    echo " OUTPUT-DIR is the diretory where generated files are outputed"
+    echo " RELEASE can be repeated multiple times. There are the release unstable, release-25.05, ..."
+    echo "   Release names correspond to the Hydra jobset names: https://hydra.nixos.org/project/nixos"
+    exit 1
+fi
 
 DEST_DIR=$1
 mkdir -p ${DEST_DIR}

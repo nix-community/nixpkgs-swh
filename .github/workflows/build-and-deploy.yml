@@ -1,0 +1,29 @@
+name: Build sources-unstable.json for nixpkgs.hello
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # execute workflow every day at midnight
+    - cron: "0 0 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          install_options: --no-daemon
+      - name: Build sources-unstable.json for nixpkgs.hello
+        run: nix run .#nixpkgs-swh-generate -- --testing build unstable
+      - name: Display sources-unstable.json for nixpkgs.hello
+        run: cat build/sources-unstable.json | jq
