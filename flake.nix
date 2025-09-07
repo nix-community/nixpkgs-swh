@@ -35,7 +35,6 @@
 
     nixosModules.nixpkgs-swh = { config, pkgs, lib, ... }: let
       cfg = config.services.nixpkgs-swh;
-      dir = "/var/lib/nixpkgs-swh";
     in {
       # Add an option to specify release or let the script finding
       # releases.
@@ -55,11 +54,12 @@
               Whether to only evaluate the hello attribute for testing purpose.
             '';
           };
-          fqdn = lib.mkOption {
+          outputDir = lib.mkOption {
             type = lib.types.str;
             description = ''
-              The Nginx vhost FQDN used to serve built files.
+              The directory where generated files are stored.
             '';
+            default = "/var/lib/nixpkgs-swh";
           };
         };
       };
@@ -70,21 +70,11 @@
           wantedBy = [ "multi-user.target" ];
           startAt = "daily";
           script = ''
-            ${pkgs.nixpkgs-swh-generate}/bin/nixpkgs-swh-generate ${lib.strings.optionalString cfg.testing "--testing"} ${dir} unstable
+            ${pkgs.nixpkgs-swh-generate}/bin/nixpkgs-swh-generate ${lib.strings.optionalString cfg.testing "--testing"} ${cfg.outputDir} unstable
           '';
         };
         systemd.timers.nixpkgs-swh.timerConfig = {
           Persistent = true;
-        };
-        services.nginx.virtualHosts = {
-          "${cfg.fqdn}" = {
-            locations."/" = {
-              root = "${dir}";
-              extraConfig = ''
-                autoindex on;
-              '';
-            };
-          };
         };
       };
     };
